@@ -1,4 +1,4 @@
-import { tokenize } from './lexer.js'
+import { Lexer } from './lexer.js'
 
 document.querySelector('#app').innerHTML = `
 <input id="equation" type="text">
@@ -9,6 +9,6 @@ const input = document.querySelector("#equation");
 const button = document.querySelector("#tokenize");
 
 button.addEventListener("click", () => {
-    const tokens = tokenize(input.value);
-    console.table(tokens);
+    const lexer = new Lexer(input.value);
+    console.table(lexer.tokens);
 });
