@@ -63,11 +63,11 @@ export class Lexer{
             }
         }
 
-        if(this.#currChar() === "." && this.#index + 1 < this.equation.length && this.#isNumber(equation[index + 1])){
+        if(this.#currChar() === "." && this.#index + 1 < this.equation.length && this.#isNumber(this.equation[this.#index + 1])){
             isDecimalNumber = true;
-            index++;
+            this.#index++;
             while(this.#inBound() && this.#isNumber(this.#currChar())){
-                index++;
+                this.#index++;
             }
         }
 
