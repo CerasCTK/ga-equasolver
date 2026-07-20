@@ -48,7 +48,6 @@ export class Lexer{
 				newIndex: currentIndex,
 			};
 		}
-
 	}
 
 	static #scanNumber(equation, currentIndex){
@@ -71,16 +70,13 @@ export class Lexer{
 			return null;
 		}else{
 			const tokens = [];
-			const number = new Token(TokenType.NUMBER, equation.slice(start, currentIndex));
-			const variables = this.#scanVariables(equation, currentIndex);
+			tokens.push(new Token(TokenType.NUMBER, equation.slice(start, currentIndex)));
 
+			const variables = this.#scanVariables(equation, currentIndex);
 			if(variables !== null){
-				const {tokens, newIndex} = variables;
-				currentIndex = newIndex;
-				console.log(tokens);
-				tokens.push(...tokens);
-			}else{
-				tokens.push(number);
+				currentIndex = variables.newIndex;
+                tokens.push(new Token(TokenType.MULTIPLY, "*"));
+				tokens.push(...variables.tokens);
 			}
 
 			return {
@@ -125,28 +121,28 @@ export class Lexer{
 
             switch(equation[currentIndex]){
                 case "(":
-                    this.tokens.push(new Token(TokenType.OPEN_PARENTHESIS, "("));
+                    tokens.push(new Token(TokenType.OPEN_PARENTHESIS, "("));
                     break;
                 case ")":
-                    this.tokens.push(new Token(TokenType.CLOSE_PARENTHESIS, ")"));
+                    tokens.push(new Token(TokenType.CLOSE_PARENTHESIS, ")"));
                     break;
                 case "=":
-                    this.tokens.push(new Token(TokenType.EQUAL, "="));
+                    tokens.push(new Token(TokenType.EQUAL, "="));
                     break;
                 case "+":
-                    this.tokens.push(new Token(TokenType.PLUS, "+"));
+                    tokens.push(new Token(TokenType.PLUS, "+"));
                     break;
                 case "-":
-                    this.tokens.push(new Token(TokenType.MINUS, "-"));
+                    tokens.push(new Token(TokenType.MINUS, "-"));
                     break;
                 case "*":
-                    this.tokens.push(new Token(TokenType.MULTIPLY, "*"));
+                    tokens.push(new Token(TokenType.MULTIPLY, "*"));
                     break;
                 case "/":
-                    this.tokens.push(new Token(TokenType.DIVIDE, "/"));
+                    tokens.push(new Token(TokenType.DIVIDE, "/"));
                     break;
                 case "^":
-                    this.tokens.push(new Token(TokenType.POWER, "^"));
+                    tokens.push(new Token(TokenType.POWER, "^"));
                     break;
 				default:
 					return null;
