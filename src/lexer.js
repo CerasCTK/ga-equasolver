@@ -1,17 +1,17 @@
 const TokenType = {
     NUMBER: "NUMBER",
-    DECIMAL_NUMBER: "DECIMAL_NUMBER",
     VARIABLE: "VARIABLE",
     OPEN_PARENTHESIS: "OPEN_PARENTHESIS",
     CLOSE_PARENTHESIS: "CLOSE_PARENTHESIS",
     EQUAL: "EQUAL",
     PLUS: "PLUS",
     MINUS: "MINUS",
-    ASTERISK: "ASTERISK",
-    SLASH: "SLASH",
-    SQRT: "SQRT",
-    CARET: "CARET",
+    MULTIPLY: "MULTIPLY",
+    DIVIDE: "DIVIDE",
+    POWER: "POWER",
 };
+
+Object.freeze(TokenType);
 
 class Token{
     constructor(type, value){
@@ -21,120 +21,109 @@ class Token{
 }
 
 export class Lexer{
-    constructor(equation){
-        this.tokens = [];
-        this.equation = equation.trim();
-        this.#tokenize();
-    }
-    #index = 0;
+	static #scanVariables(equation, currentIndex){
+		const start = currentIndex;
+		if(this.#isLetter(equation[currentIndex])){
+			while(currentIndex < equation.length && this.#isLetter(equation[currentIndex])){
+				currentIndex++;
+			}
+		}
+		if(start === currentIndex){
+			return null;
+		}else{
+			const tokens = equation
+				.slice(start, currentIndex)
+				.split("")
+				.join("*")
+				.split("")
+				.map((char) => {
+					if(char === "*"){
+						return new Token(TokenType.MULTIPLY, "*");
+					}else{
+						return new Token(TokenType.VARIABLE, char);
+					}
+				});
+			return {
+				tokens: tokens,
+				newIndex: currentIndex,
+			};
+		}
 
-    #scanVariableAndSqrt(){
-        const start = this.#index;
-        if(this.#index + 4 <= this.equation.length && this.#chop(this.#index, this.#index + 4) == "sqrt"){
-            this.#index += 4;
-            return new Token(TokenType.SQRT, "sqrt");
-        }
-        if(this.#isLetter(this.#currChar())){
-            while(this.#inBound() && this.#isLetter(this.#currChar())){
-                this.#index++;
-            }
-        }
-        if(start === this.#index){
-            return null;
-        }else{
-            const result = this.#chop(start, this.#index).split("").join("*").split("");
-            return result.map((char) => {
-                if(char === "*"){
-                    return new Token(TokenType.ASTERISK, "*");
-                }else{
-                    return new Token(TokenType.VARIABLE, char);
-                }
-            });
-        }
-    }
+	}
 
-    #scanNumber(){
-        let isDecimalNumber = false, isVariableTerm = false;
+	static #scanNumber(equation, currentIndex){
+		const start = currentIndex;
 
-        const start = this.#index;
-        if(this.#isNumber(this.#currChar())){
-            while(this.#inBound() && this.#isNumber(this.#currChar())){
-                this.#index++;
-            }
-        }
+		if(this.#isNumber(equation[currentIndex])){
+			while(currentIndex < equation.length && this.#isNumber(equation[currentIndex])){
+				currentIndex++;
+			}
+		}
 
-        if(this.#currChar() === "." && this.#index + 1 < this.equation.length && this.#isNumber(this.equation[this.#index + 1])){
-            isDecimalNumber = true;
-            this.#index++;
-            while(this.#inBound() && this.#isNumber(this.#currChar())){
-                this.#index++;
-            }
-        }
+		if(equation[currentIndex] === "." && currentIndex + 1 < equation.length && this.#isNumber(equation[currentIndex + 1])){
+			currentIndex++;
+			while(currentIndex < equation.length && this.#isNumber(equation[currentIndex])){
+				currentIndex++;
+			}
+		}
 
-        if(start === this.#index){
-            return null;
-        }
+		if(start === currentIndex){
+			return null;
+		}else{
+			const tokens = [];
+			const number = new Token(TokenType.NUMBER, equation.slice(start, currentIndex));
+			const variables = this.#scanVariables(equation, currentIndex);
 
-        let number;
-        if(isDecimalNumber){
-            number = new Token(TokenType.DECIMAL_NUMBER, this.#chop(start, this.#index));
-        }else{
-            number = new Token(TokenType.NUMBER, this.#chop(start, this.#index));
-        }
+			if(variables !== null){
+				const {tokens, newIndex} = variables;
+				currentIndex = newIndex;
+				console.log(tokens);
+				tokens.push(...tokens);
+			}else{
+				tokens.push(number);
+			}
 
-        let result = this.#scanVariableAndSqrt();
-        result = Array.isArray(result) ? result : [result];
-        if(result !== null && result.type != TokenType.SQRT){
-            return [
-                number,
-                new Token(TokenType.ASTERISK, "*"),
-                ...result
-            ];
-        }else{
-            return number;
-        }
-    }
+			return {
+				tokens: tokens,
+				newIndex: currentIndex
+			};
+		}
+	}
 
-    #inBound(){
-        return this.#index < this.equation.length;
-    }
-
-    #currChar(){
-        return this.equation[this.#index];
-    }
-
-    #chop(start, end){
-        return this.equation.slice(start, end);
-    }
-
-    #isNumber(char){
+    static #isNumber(char){
         return char >= "0" && char <= "9";
     }
-    #isLetter(char){
+
+    static #isLetter(char){
         return char >= "a" && char <= "z";
     }
 
-    #tokenize(){
-        while(this.#inBound()){
-            if(this.#currChar() === " "){
-                this.#index++;
+	static tokenize(equation){
+		let currentIndex = 0;
+		const tokens = [];
+
+        while(currentIndex < equation.length){
+            if(equation[currentIndex] === " "){
+				currentIndex++;
                 continue;
             }
 
-            const number = this.#scanNumber();
-            if(number !== null){
-                // when scan number it may return an array of tokens for example 2x = [2, *, x]
-                this.tokens.push(...(Array.isArray(number) ? number : [number]));
-                continue;
-            }
+			const numbers = this.#scanNumber(equation, currentIndex);
 
-            const variable = this.#scanVariableAndSqrt();
-            if(variable !== null){
-                this.tokens.push(...(Array.isArray(variable) ? variable : [variable]));
-                continue;
-            }
+			if(numbers !== null){
+				currentIndex = numbers.newIndex;
+				tokens.push(...numbers.tokens);
+				continue;
+			}
 
-            switch(this.#currChar()){
+			const variables = this.#scanVariables(equation, currentIndex);
+			if(variables !== null){
+				currentIndex = variables.newIndex;
+				tokens.push(...variables.tokens);
+				continue;
+			}
+
+            switch(equation[currentIndex]){
                 case "(":
                     this.tokens.push(new Token(TokenType.OPEN_PARENTHESIS, "("));
                     break;
@@ -151,16 +140,19 @@ export class Lexer{
                     this.tokens.push(new Token(TokenType.MINUS, "-"));
                     break;
                 case "*":
-                    this.tokens.push(new Token(TokenType.ASTERISK, "*"));
+                    this.tokens.push(new Token(TokenType.MULTIPLY, "*"));
                     break;
                 case "/":
-                    this.tokens.push(new Token(TokenType.SLASH, "/"));
+                    this.tokens.push(new Token(TokenType.DIVIDE, "/"));
                     break;
                 case "^":
-                    this.tokens.push(new Token(TokenType.CARET, "^"));
+                    this.tokens.push(new Token(TokenType.POWER, "^"));
                     break;
+				default:
+					return null;
             }
-            this.#index++;
+			currentIndex++;
         }
+		return tokens;
     }
 }
