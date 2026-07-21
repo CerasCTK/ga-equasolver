@@ -6,9 +6,9 @@ const TokenType = {
     EQUAL: "EQUAL",
     PLUS: "PLUS",
     MINUS: "MINUS",
-    MULTIPLY: "MULTIPLY",
-    DIVIDE: "DIVIDE",
-    POWER: "POWER",
+    ASTERISK: "ASTERISK",
+    SLASH: "SLASH",
+    CARET: "CARET",
 };
 
 Object.freeze(TokenType);
@@ -38,7 +38,7 @@ export class Lexer{
 				.split("")
 				.map((char) => {
 					if(char === "*"){
-						return new Token(TokenType.MULTIPLY, "*");
+						return new Token(TokenType.ASTERISK, "*");
 					}else{
 						return new Token(TokenType.VARIABLE, char);
 					}
@@ -75,7 +75,7 @@ export class Lexer{
 			const variables = this.#scanVariables(equation, currentIndex);
 			if(variables !== null){
 				currentIndex = variables.newIndex;
-                tokens.push(new Token(TokenType.MULTIPLY, "*"));
+                tokens.push(new Token(TokenType.ASTERISK, "*"));
 				tokens.push(...variables.tokens);
 			}
 
@@ -136,13 +136,13 @@ export class Lexer{
                     tokens.push(new Token(TokenType.MINUS, "-"));
                     break;
                 case "*":
-                    tokens.push(new Token(TokenType.MULTIPLY, "*"));
+                    tokens.push(new Token(TokenType.ASTERISK, "*"));
                     break;
                 case "/":
-                    tokens.push(new Token(TokenType.DIVIDE, "/"));
+                    tokens.push(new Token(TokenType.SLASH, "/"));
                     break;
                 case "^":
-                    tokens.push(new Token(TokenType.POWER, "^"));
+                    tokens.push(new Token(TokenType.CARET, "^"));
                     break;
 				default:
 					return null;
