@@ -7,6 +7,31 @@ export class Parser{
         this.currentIndex = 0;
     }
 
+    peek(){
+        return this.tokens.at(this.currentIndex);
+    }
+
+    previous(){
+        return this.tokens.at(this.currentIndex - 1);
+    }
+
+    isAtEnd(){
+        return this.peek().type === TokenType.END;
+    }
+
+    advance(){
+        if(!this.isAtEnd()){
+            this.currentIndex++;
+        }
+    }
+
+    match(type){
+        if(this.isAtEnd()){
+            return type === TokenType.END;
+        }
+        return this.peek().type === type;
+    }
+
 	parse(){
 		const equation = this.parseEquation();
 		return equation;
@@ -15,24 +40,24 @@ export class Parser{
 	parseEquation(){
 		const lhs = this.parseExpression();
 
-		if(tokens[this.currentIndex].type !== TokenType.EQUAL){
+		if(!this.match(TokenType.EQUAL)){
 			throw new Error("Expected = in equation");
 		}else{
-			this.currentIndex++;
+            this.advance();
 		}
 		const rhs = this.parseExpression();
 		return new Equation(lhs, rhs);
 	}
 
 	parseExpression(){
-		const lhs = this.parseTerm();
+		let lhs = this.parseTerm();
 		while(true){
-			if(this.tokens[this.currentIndex].type === TokenType.PLUS){
-                this.currentIndex++;
+			if(this.match(TokenType.PLUS)){
+                this.advance();
 				const rhs = this.parseTerm();
 				lhs = new BinaryExpr(Operator.ADD, lhs, rhs);
-			}else if(this.tokens[this.currentIndex].type == TokenType.MINUS){
-                this.currentIndex++;
+			}else if(this.match(TokenType.MINUS)){
+                this.advance();
 				const rhs = this.parseTerm();
 				lhs = new BinaryExpr(Operator.SUBTRACT, lhs, rhs);
 			}else{
@@ -43,14 +68,14 @@ export class Parser{
 	}
 
     parseTerm(){
-        const lhs = this.parseUnary();
+        let lhs = this.parseUnary();
         while(true){
-            if(this.tokens[this.currentIndex].type === TokenType.ASTERISK){
-                this.currentIndex++;
+            if(this.match(TokenType.ASTERISK)){
+                this.advance();
                 const rhs = this.parseUnary();
                 lhs = new BinaryExpr(Operator.MULTIPLY, lhs, rhs);
-            }else if(this.tokens[this.currentIndex].type === TokenType.SLASH){
-                this.currentIndex++;
+            }else if(this.match(TokenType.SLASH)){
+                this.advance();
                 const rhs = this.parseUnary();
                 lhs = new BinaryExpr(Operator.DIVIDE, lhs, rhs);
             }else{
@@ -61,12 +86,12 @@ export class Parser{
     }
 
 	parseUnary(){
-        if(this.tokens[this.currentIndex].type === TokenType.PLUS){
-            this.currentIndex++;
+        if(this.match(TokenType.PLUS)){
+            this.advance();
             return new UnaryExpr(Unary.PLUS, this.parseUnary());
         }
-        if(this.tokens[this.currentIndex].type === TokenType.MINUS){
-            this.currentIndex++;
+        if(this.match(TokenType.MINUS)){
+            this.advance();
             return new UnaryExpr(Unary.MINUS, this.parseUnary());
         }
 
@@ -75,8 +100,8 @@ export class Parser{
 
 	parsePower(){
 		const lhs = this.parseFactor();
-		if(this.tokens[this.currentIndex].type === TokenType.CARET){
-            this.currentIndex++;
+		if(this.match(TokenType.CARET)){
+            this.advance();
 			const rhs = this.parseUnary();
 			return new BinaryExpr(Operator.POWER, lhs, rhs);
 		}
@@ -84,19 +109,21 @@ export class Parser{
 	}
 
 	parseFactor(){
-		if(this.tokens[this.currentIndex].type === TokenType.NUMBER){
-			return new NumberExpr(Number(this.tokens[this.currentIndex++].value));
+		if(this.match(TokenType.NUMBER)){
+            this.advance();
+			return new NumberExpr(Number(this.previous().value));
 		}
-		if(this.tokens[this.currentIndex].type === TokenType.VARIABLE){
-			return new VariableExpr(this.tokens[this.currentIndex++].value);
+		if(this.match(TokenType.VARIABLE)){
+            this.advance();
+			return new VariableExpr(this.previous().value);
 		}
-		if(this.tokens[this.currentIndex].type === TokenType.OPEN_PARENTHESIS){
-            this.currentIndex++;
+		if(this.match(TokenType.OPEN_PARENTHESIS)){
+            this.advance();
 			const expression = this.parseExpression();
-			if(this.tokens[this.currentIndex].type !== TokenType.CLOSE_PARENTHESIS){
+			if(!this.match(TokenType.CLOSE_PARENTHESIS)){
 				throw new Error("Expected ')'");
 			}else{
-                this.currentIndex++;
+                this.advance();
             }
             return expression;
 		}

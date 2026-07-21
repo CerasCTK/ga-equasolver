@@ -14,5 +14,5 @@ button.addEventListener("click", () => {
     console.table(tokens);
     const parser = new Parser(tokens);
     const ast = parser.parse();
-    console.table(ast);
+    console.log(JSON.stringify(ast, null, 4));
 });

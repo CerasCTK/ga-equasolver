@@ -9,6 +9,7 @@ export const TokenType = Object.freeze({
     ASTERISK: "ASTERISK",
     SLASH: "SLASH",
     CARET: "CARET",
+    END: "END"
 });
 
 export class Token{
@@ -17,4 +18,3 @@ export class Token{
         this.value = value;
     }
 }
-

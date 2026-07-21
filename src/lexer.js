@@ -129,6 +129,7 @@ export class Lexer{
             }
 			currentIndex++;
         }
+        tokens.push(new Token(TokenType.END, ""));
 		return tokens;
     }
 }
