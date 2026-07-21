@@ -10,7 +10,8 @@ const input = document.querySelector("#equation");
 const button = document.querySelector("#tokenize");
 
 button.addEventListener("click", () => {
-	const tokens = Lexer.tokenize(input.value);
+	const lexer = new Lexer(input.value);
+    const tokens = lexer.tokenize();
     console.table(tokens);
     const parser = new Parser(tokens);
     const ast = parser.parse();

@@ -1,105 +1,68 @@
 import { TokenType, Token } from "./token.js"
 
 export class Lexer{
-	static #scanVariables(equation, currentIndex){
-		const start = currentIndex;
-		if(this.#isLetter(equation[currentIndex])){
-			while(currentIndex < equation.length && this.#isLetter(equation[currentIndex])){
-				currentIndex++;
-			}
-		}
-		if(start === currentIndex){
-			return null;
-		}else{
-			const tokens = equation
-				.slice(start, currentIndex)
-				.split("")
-				.join("*")
-				.split("")
-				.map((char) => {
-					if(char === "*"){
-						return new Token(TokenType.ASTERISK, "*");
-					}else{
-						return new Token(TokenType.VARIABLE, char);
-					}
-				});
-			return {
-				tokens: tokens,
-				newIndex: currentIndex,
-			};
-		}
-	}
-
-	static #scanNumber(equation, currentIndex){
-		const start = currentIndex;
-
-		if(this.#isNumber(equation[currentIndex])){
-			while(currentIndex < equation.length && this.#isNumber(equation[currentIndex])){
-				currentIndex++;
-			}
-		}
-
-		if(equation[currentIndex] === "." && currentIndex + 1 < equation.length && this.#isNumber(equation[currentIndex + 1])){
-			currentIndex++;
-			while(currentIndex < equation.length && this.#isNumber(equation[currentIndex])){
-				currentIndex++;
-			}
-		}
-
-		if(start === currentIndex){
-			return null;
-		}else{
-			const tokens = [];
-			tokens.push(new Token(TokenType.NUMBER, equation.slice(start, currentIndex)));
-
-			const variables = this.#scanVariables(equation, currentIndex);
-			if(variables !== null){
-				currentIndex = variables.newIndex;
-                tokens.push(new Token(TokenType.ASTERISK, "*"));
-				tokens.push(...variables.tokens);
-			}
-
-			return {
-				tokens: tokens,
-				newIndex: currentIndex
-			};
-		}
-	}
-
-    static #isNumber(char){
-        return char >= "0" && char <= "9";
+    constructor(equation){
+        this.equation = equation;
+        this.startIndex = 0;
+        this.currentIndex = 0;
     }
 
-    static #isLetter(char){
-        return char >= "a" && char <= "z";
+    tokenize(){
+        const rawTokens = this.scanTokens();
+
+        const tokens = this.insertMultiply(rawTokens);
+
+        tokens.push(new Token(TokenType.END, ""));
+
+        return tokens;
     }
 
-	static tokenize(equation){
-		let currentIndex = 0;
-		const tokens = [];
+    checkForMultiply(lhs, rhs){
+        if(lhs == TokenType.NUMBER && rhs == TokenType.VARIABLE){
+            return true;
+        }
+        if(lhs == TokenType.NUMBER && rhs == TokenType.OPEN_PARENTHESIS){
+            return true;
+        }
+        if(lhs == TokenType.VARIABLE && rhs == TokenType.VARIABLE){
+            return true;
+        }
+        if(lhs == TokenType.VARIABLE && rhs == TokenType.OPEN_PARENTHESIS){
+            return true;
+        }
+        if(lhs == TokenType.CLOSE_PARENTHESIS && rhs == TokenType.VARIABLE){
+            return true;
+        }
+        if(lhs == TokenType.CLOSE_PARENTHESIS && rhs == TokenType.OPEN_PARENTHESIS){
+            return true;
+        }
+        return false;
+    }
 
-        while(currentIndex < equation.length){
-            if(equation[currentIndex] === " "){
-				currentIndex++;
+    insertMultiply(rawTokens){
+        const tokens = [];
+        for(let i=0;i<rawTokens.length;++i){
+            tokens.push(rawTokens.at(i));
+            if(i+1 >= rawTokens.length){
                 continue;
             }
+            const lhs = rawTokens.at(i);
+            const rhs = rawTokens.at(i + 1);
+            if(this.checkForMultiply(lhs.type, rhs.type)){
+                tokens.push(new Token(TokenType.ASTERISK, "*"));
+            }
+        }
+        return tokens;
+    }
 
-			const numbers = this.#scanNumber(equation, currentIndex);
-
-			if(numbers !== null){
-				currentIndex = numbers.newIndex;
-				tokens.push(...numbers.tokens);
-				continue;
-			}
-
-			const variables = this.#scanVariables(equation, currentIndex);
-			if(variables !== null){
-				currentIndex = variables.newIndex;
-				tokens.push(...variables.tokens);
-				continue;
-			}
-
-            switch(equation[currentIndex]){
+    scanTokens(){
+        const tokens = [];
+        while(!this.isAtEnd()){
+            this.startIndex = this.currentIndex;
+            const char = this.advance();
+            switch(char){
+                case " ":
+                    break;
                 case "(":
                     tokens.push(new Token(TokenType.OPEN_PARENTHESIS, "("));
                     break;
@@ -124,12 +87,60 @@ export class Lexer{
                 case "^":
                     tokens.push(new Token(TokenType.CARET, "^"));
                     break;
-				default:
-					throw new Error("Invalid token");
+                default:
+                    if(this.isNumber(char)){
+                        tokens.push(this.scanNumber());
+                    }else if(this.isLetter(char)){
+                        tokens.push(this.scanVariable());
+                    }else{
+                        throw new Error("Invalid token");
+                    }
+                    break;
             }
-			currentIndex++;
         }
-        tokens.push(new Token(TokenType.END, ""));
-		return tokens;
+        return tokens;
+    }
+
+    scanNumber(){
+        while(this.isNumber(this.peek())){
+            this.advance();
+        }
+        if(this.peek() == "."){
+            this.advance();
+            if(!this.isNumber(this.peek())){
+                throw new Error("Invalid decimal");
+            }
+            while(this.isNumber(this.peek())){
+                this.advance();
+            }
+        }
+        return new Token(TokenType.NUMBER, this.equation.slice(this.startIndex, this.currentIndex));
+    }
+
+    scanVariable(){
+        return new Token(TokenType.VARIABLE, this.equation.slice(this.startIndex, this.currentIndex));
+    }
+
+    isNumber(char){
+        return char >= "0" && char <= "9";
+    }
+
+    isLetter(char){
+        return char >= "a" && char <= "z";
+    }
+
+    isAtEnd(){
+        return this.currentIndex >= this.equation.length;
+    }
+
+    peek(){
+        if(this.isAtEnd()){
+            return "\0";
+        }
+        return this.equation[this.currentIndex];
+    }
+
+    advance(){
+        return this.equation[this.currentIndex++];
     }
 }

@@ -1,4 +1,4 @@
-import { Operator, Unary, NumberExpr, BinaryExpr, VariableExpr, UnaryExpr, Equation } from "./ast.js"
+import { Operator, Unary, NumberExpr, BinaryExpr, VariableExpr, UnaryExpr } from "./ast.js"
 import { TokenType } from "./token.js"
 
 export class Parser{
@@ -41,12 +41,13 @@ export class Parser{
 		const lhs = this.parseExpression();
 
 		if(!this.match(TokenType.EQUAL)){
+            console.log(JSON.stringify(lhs, null, 4));
 			throw new Error("Expected = in equation");
 		}else{
             this.advance();
 		}
 		const rhs = this.parseExpression();
-		return new Equation(lhs, rhs);
+		return new BinaryExpr(Operator.EQUAL, lhs, rhs);
 	}
 
 	parseExpression(){
@@ -88,11 +89,11 @@ export class Parser{
 	parseUnary(){
         if(this.match(TokenType.PLUS)){
             this.advance();
-            return new UnaryExpr(Unary.PLUS, this.parseUnary());
+            return new UnaryExpr(Unary.POSITIVE, this.parseUnary());
         }
         if(this.match(TokenType.MINUS)){
             this.advance();
-            return new UnaryExpr(Unary.MINUS, this.parseUnary());
+            return new UnaryExpr(Unary.NEGATIVE, this.parseUnary());
         }
 
         return this.parsePower();

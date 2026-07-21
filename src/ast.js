@@ -1,4 +1,5 @@
 export const Operator = Object.freeze({
+    EQUAL: "EQUAL",
 	ADD: "ADD",
 	SUBTRACT: "SUBTRACT",
 	MULTIPLY: "MULTIPLY",
@@ -7,7 +8,7 @@ export const Operator = Object.freeze({
 });
 
 export const Unary = Object.freeze({
-	PLUS: "PLUS",
+	POSITIVE: "POSITIVE",
 	NEGATIVE: "NEGATIVE"
 });
 
@@ -35,12 +36,5 @@ export class UnaryExpr{
 	constructor(op, operand){
 		this.op = op;
 		this.operand = operand;
-	}
-}
-
-export class Equation{
-	constructor(lhs, rhs){
-		this.lhs = lhs;
-		this.rhs = rhs;
 	}
 }
