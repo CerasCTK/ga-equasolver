@@ -24,10 +24,10 @@ export class VariableExpr{
 }
 
 export class BinaryExpr{
-	constructor(op, left, right){
+	constructor(op, lhs, rhs){
 		this.op = op;
-		this.left = left;
-		this.right = right;
+		this.lhs = lhs;
+		this.rhs = rhs;
 	}
 }
 
@@ -39,8 +39,8 @@ export class UnaryExpr{
 }
 
 export class Equation{
-	constructor(left, right){
-		this.left = left;
-		this.right = right;
+	constructor(lhs, rhs){
+		this.lhs = lhs;
+		this.rhs = rhs;
 	}
 }

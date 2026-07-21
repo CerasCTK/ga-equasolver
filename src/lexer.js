@@ -1,24 +1,4 @@
-const TokenType = {
-    NUMBER: "NUMBER",
-    VARIABLE: "VARIABLE",
-    OPEN_PARENTHESIS: "OPEN_PARENTHESIS",
-    CLOSE_PARENTHESIS: "CLOSE_PARENTHESIS",
-    EQUAL: "EQUAL",
-    PLUS: "PLUS",
-    MINUS: "MINUS",
-    ASTERISK: "ASTERISK",
-    SLASH: "SLASH",
-    CARET: "CARET",
-};
-
-Object.freeze(TokenType);
-
-class Token{
-    constructor(type, value){
-        this.type = type;
-        this.value = value;
-    }
-}
+import { TokenType, Token } from "./token.js"
 
 export class Lexer{
 	static #scanVariables(equation, currentIndex){
@@ -145,7 +125,7 @@ export class Lexer{
                     tokens.push(new Token(TokenType.CARET, "^"));
                     break;
 				default:
-					return null;
+					throw new Error("Invalid token");
             }
 			currentIndex++;
         }
