@@ -1,34 +1,40 @@
 import { Operator, Unary, NumberExpr, BinaryExpr, VariableExpr, UnaryExpr, Equation } from "./ast.js"
+import { TokenType } from "./token.js"
 
 export class Parser{
-	static parse(tokens){
-		const equation = this.#parseEquation(tokens);
+    constructor(tokens){
+        this.tokens = tokens;
+        this.currentIndex = 0;
+    }
+
+	parse(){
+		const equation = this.parseEquation();
 		return equation;
 	}
 
-	static #parseEquation(tokens){
-		let currentIndex = 0;
-		const { lhs, newIndex } = this.#parseExpression(tokens, currentIndex);
-		currentIndex = newIndex;
+	parseEquation(){
+		const lhs = this.parseExpression();
 
-		if(tokens[currentIndex].type !== TokenType.EQUAL){
+		if(tokens[this.currentIndex].type !== TokenType.EQUAL){
 			throw new Error("Expected = in equation");
 		}else{
-			currentIndex++;
+			this.currentIndex++;
 		}
-		const { rhs, newIndex } = this.#parseExpression(tokens, currentIndex);
+		const rhs = this.parseExpression();
 		return new Equation(lhs, rhs);
 	}
 
-	static #parseExpression(tokens, currentIndex){
-		const lhs = parseTerm(tokens);
+	parseExpression(){
+		const lhs = this.parseTerm();
 		while(true){
-			if(tokens[tokens.currentIndex].type === TokenType.PLUS){
-				const rhs = parseTerm(tokens);
+			if(this.tokens[this.currentIndex].type === TokenType.PLUS){
+                this.currentIndex++;
+				const rhs = this.parseTerm();
 				lhs = new BinaryExpr(Operator.ADD, lhs, rhs);
-			}else if(tokens[tokens.currentIndex].type == TokenType.MINUS){
-				const rhs = parseTerm(tokens);
-				lhs = new BinaryExpr(Operator.SUBTRACT, left, right);
+			}else if(this.tokens[this.currentIndex].type == TokenType.MINUS){
+                this.currentIndex++;
+				const rhs = this.parseTerm();
+				lhs = new BinaryExpr(Operator.SUBTRACT, lhs, rhs);
 			}else{
 				break;
 			}
@@ -36,65 +42,63 @@ export class Parser{
 		return lhs;
 	}
 
-	static #parseTerm(tokens){
-		const lhs = parseUnary(tokens);
-		while(true){
-			if(tokens[tokens.currentIndex].type === TokenType.ASTERISK){
-				const rhs = parseUnary(tokens);
-				lhs = new BinaryExpr(Operator.MULTIPLY, lhs, rhs);
-			}else if(tokens[tokens.currentIndex].type === TokenType.SLASH){
-				const rhs = parseUnary(tokens);
-				lhs = new BinaryExpr(Operator.DIVIDE, lhs, rhs);
-			}else{
-				break;
-			}
+    parseTerm(){
+        const lhs = this.parseUnary();
+        while(true){
+            if(this.tokens[this.currentIndex].type === TokenType.ASTERISK){
+                this.currentIndex++;
+                const rhs = this.parseUnary();
+                lhs = new BinaryExpr(Operator.MULTIPLY, lhs, rhs);
+            }else if(this.tokens[this.currentIndex].type === TokenType.SLASH){
+                this.currentIndex++;
+                const rhs = this.parseUnary();
+                lhs = new BinaryExpr(Operator.DIVIDE, lhs, rhs);
+            }else{
+                break;
+            }
+        }
+        return lhs;
+    }
+
+	parseUnary(){
+        if(this.tokens[this.currentIndex].type === TokenType.PLUS){
+            this.currentIndex++;
+            return new UnaryExpr(Unary.PLUS, this.parseUnary());
+        }
+        if(this.tokens[this.currentIndex].type === TokenType.MINUS){
+            this.currentIndex++;
+            return new UnaryExpr(Unary.MINUS, this.parseUnary());
+        }
+
+        return this.parsePower();
+	}
+
+	parsePower(){
+		const lhs = this.parseFactor();
+		if(this.tokens[this.currentIndex].type === TokenType.CARET){
+            this.currentIndex++;
+			const rhs = this.parseUnary();
+			return new BinaryExpr(Operator.POWER, lhs, rhs);
 		}
 		return lhs;
 	}
 
-	static #parseUnary(tokens, currentIndex){
-
-	}
-
-	static #parsePower(tokens, currentIndex){
-		const { result as lhs, newIndex } = this.#parseFactor(tokens, currentIndex);
-		currentIndex = newIndex;
-		if(tokens[currentIndex].type == TokenType.CARET){
-			const { result as rhs, newIndex } = this.#parseUnary(token, currentIndex);
-			currentIndex = newIndex;
-			return {
-				result: new BinaryExpr(Operator.POWER, lhs, rhs),
-				newIndex: currentIndex + 1,
-			}
+	parseFactor(){
+		if(this.tokens[this.currentIndex].type === TokenType.NUMBER){
+			return new NumberExpr(Number(this.tokens[this.currentIndex++].value));
 		}
-		return lhs;
-	}
-
-	static #parseFactor(tokens, currentIndex){
-		if(tokens[currentIndex].type === TokenType.NUMBER){
-			const numberExpr = new NumberExpr(Number(tokens[currentIndex].value));
-			return {
-				result: numberExpr,
-				newIndex: currentIndex + 1,
-			};
+		if(this.tokens[this.currentIndex].type === TokenType.VARIABLE){
+			return new VariableExpr(this.tokens[this.currentIndex++].value);
 		}
-		if(tokens[currentIndex].type === TokenType.VARIABLE){
-			const variableExpr = new VariableExpr(tokens[currentIndex].value);
-			return {
-				result: variableExpr,
-				newIndex: currentIndex + 1,
-			}
-		}
-		if(tokens[currentIndex].type === TokenType.OPEN_PARENTHESIS){
-			const { expression, newIndex } = this.#parseExpression(tokens, currentIndex);
-			currentIndex = newIndex;
-			if(tokens[currentIndex].type !== TokenType.CLOSE_PARENTHESIS){
+		if(this.tokens[this.currentIndex].type === TokenType.OPEN_PARENTHESIS){
+            this.currentIndex++;
+			const expression = this.parseExpression();
+			if(this.tokens[this.currentIndex].type !== TokenType.CLOSE_PARENTHESIS){
 				throw new Error("Expected ')'");
-			}
-			return {
-				result: expression,
-				newIndex: currentIndex + 1,
-			};
+			}else{
+                this.currentIndex++;
+            }
+            return expression;
 		}
 		throw new Error("Parse factor error");
 	}
