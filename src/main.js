@@ -17,16 +17,10 @@ button.addEventListener("click", () => {
     parser.parse();
     console.log(JSON.stringify(parser.ast, null, 4));
 	console.log(parser.variables);
-	const population1 = new Map();
-	population1.set("x", 2);
-	population1.set("y", 6);
-
-	const population2 = new Map();
-	population2.set("x", 2);
-	population2.set("y", 8);
-
-	console.log(parser.evaluate(population1));
-	console.log(parser.evaluate(population2));
+	const population1 = [2, 6];
+	const population2 = [2, 8];
+	console.log(parser.computeResidual(population1));
+	console.log(parser.computeResidual(population2));
 });
 
 // 2xyz + 3x^2y - 4xy^2 = 5(x + y)(z - 2)
