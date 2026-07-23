@@ -10,13 +10,18 @@ const input = document.querySelector("#equation");
 const button = document.querySelector("#tokenize");
 
 button.addEventListener("click", () => {
+    // Tokens
 	const lexer = new Lexer(input.value);
     const tokens = lexer.tokenize();
     console.table(tokens);
+    // Parser
     const parser = new Parser(tokens);
-    parser.parse();
-    console.log(JSON.stringify(parser.ast, null, 4));
-	console.log(parser.variables);
+    const AST = parser.parse();
+    console.log(JSON.stringify(AST, null, 4));
+    // Variables
+    const variables = parser.getVariables();
+	console.log(variables);
+    // Compute residual
 	const population1 = [2, 6];
 	const population2 = [2, 8];
 	console.log(parser.computeResidual(population1));

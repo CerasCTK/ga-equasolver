@@ -9,6 +9,10 @@ export class Parser{
 		this.ast = {};
     }
 
+    getAST(){
+        return this.ast;
+    }
+
     getVariables(){
         return [...this.variables];
     }
@@ -49,6 +53,7 @@ export class Parser{
 		}
 		const rhs = this.parseExpression();
 		this.ast = new BinaryExpr(Operator.EQUAL, lhs, rhs);
+        return this.ast;
 	}
 
 	parseExpression(){
