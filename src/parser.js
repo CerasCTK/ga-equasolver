@@ -13,7 +13,7 @@ export class Parser{
         return this.ast;
     }
 
-    getVariables(){
+    extractVariables(){
         return [...this.variables];
     }
 
@@ -138,13 +138,10 @@ export class Parser{
 		throw new Error("Parse factor error");
 	}
 
-	computeResidual(input){
+	computeResidual(variablesMap){
 		if(!(this.ast instanceof BinaryExpr) || this.ast.op !== Operator.EQUAL){
 			throw new Error("Invalid AST");
 		}
-        const variablesMap = new Map(
-            this.getVariables().map((variable, index) => [variable, input[index]])
-        );
 		const lhs = this.recursion(this.ast.lhs, variablesMap);
 		const rhs = this.recursion(this.ast.rhs, variablesMap);
 		return lhs - rhs;

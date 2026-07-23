@@ -19,7 +19,7 @@ button.addEventListener("click", () => {
     const AST = parser.parse();
     console.log(JSON.stringify(AST, null, 4));
     // Variables
-    const variables = parser.getVariables();
+    const variables = parser.extractVariables();
 	console.log(variables);
     // Compute residual
 	const population1 = [2, 6];
