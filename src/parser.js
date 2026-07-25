@@ -191,4 +191,12 @@ export class Parser {
         }
         throw new Error("This should not be happened!");
     }
+
+    static parseEquation = (equation) => {
+	const lexer = new Lexer(equation);
+	const tokens = lexer.tokenize();
+	
+	const parser = new Parser(tokens);
+	return parser.parse();
+    }
 }
