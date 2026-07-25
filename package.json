@@ -1,14 +1,21 @@
 {
-  "name": "ga-equasolver",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "vite": "^8.1.1"
-  }
+    "name": "ga-equasolver",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "format": "bun x prettier . --write"
+    },
+    "devDependencies": {
+        "prettier": "^3.9.6",
+        "vite": "^8.1.1"
+    },
+    "prettier": {
+        "semi": true,
+        "tabWidth": 4,
+        "singleQuote": false
+    }
 }
