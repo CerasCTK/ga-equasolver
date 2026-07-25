@@ -1,13 +1,13 @@
-import { TokenType, Token } from "./token.js"
+import { TokenType, Token } from "./token.js";
 
-export class Lexer{
-    constructor(equation){
+export class Lexer {
+    constructor(equation) {
         this.equation = equation;
         this.startIndex = 0;
         this.currentIndex = 0;
     }
 
-    tokenize(){
+    tokenize() {
         const rawTokens = this.scanTokens();
 
         const tokens = this.insertMultiply(rawTokens);
@@ -17,50 +17,53 @@ export class Lexer{
         return tokens;
     }
 
-    checkForMultiply(lhs, rhs){
-        if(lhs == TokenType.NUMBER && rhs == TokenType.VARIABLE){
+    checkForMultiply(lhs, rhs) {
+        if (lhs == TokenType.NUMBER && rhs == TokenType.VARIABLE) {
             return true;
         }
-        if(lhs == TokenType.NUMBER && rhs == TokenType.OPEN_PARENTHESIS){
+        if (lhs == TokenType.NUMBER && rhs == TokenType.OPEN_PARENTHESIS) {
             return true;
         }
-        if(lhs == TokenType.VARIABLE && rhs == TokenType.VARIABLE){
+        if (lhs == TokenType.VARIABLE && rhs == TokenType.VARIABLE) {
             return true;
         }
-        if(lhs == TokenType.VARIABLE && rhs == TokenType.OPEN_PARENTHESIS){
+        if (lhs == TokenType.VARIABLE && rhs == TokenType.OPEN_PARENTHESIS) {
             return true;
         }
-        if(lhs == TokenType.CLOSE_PARENTHESIS && rhs == TokenType.VARIABLE){
+        if (lhs == TokenType.CLOSE_PARENTHESIS && rhs == TokenType.VARIABLE) {
             return true;
         }
-        if(lhs == TokenType.CLOSE_PARENTHESIS && rhs == TokenType.OPEN_PARENTHESIS){
+        if (
+            lhs == TokenType.CLOSE_PARENTHESIS &&
+            rhs == TokenType.OPEN_PARENTHESIS
+        ) {
             return true;
         }
         return false;
     }
 
-    insertMultiply(rawTokens){
+    insertMultiply(rawTokens) {
         const tokens = [];
-        for(let i=0;i<rawTokens.length;++i){
+        for (let i = 0; i < rawTokens.length; ++i) {
             tokens.push(rawTokens.at(i));
-            if(i+1 >= rawTokens.length){
+            if (i + 1 >= rawTokens.length) {
                 continue;
             }
             const lhs = rawTokens.at(i);
             const rhs = rawTokens.at(i + 1);
-            if(this.checkForMultiply(lhs.type, rhs.type)){
+            if (this.checkForMultiply(lhs.type, rhs.type)) {
                 tokens.push(new Token(TokenType.ASTERISK, "*"));
             }
         }
         return tokens;
     }
 
-    scanTokens(){
+    scanTokens() {
         const tokens = [];
-        while(!this.isAtEnd()){
+        while (!this.isAtEnd()) {
             this.startIndex = this.currentIndex;
             const char = this.advance();
-            switch(char){
+            switch (char) {
                 case " ":
                     break;
                 case "(":
@@ -88,11 +91,11 @@ export class Lexer{
                     tokens.push(new Token(TokenType.CARET, "^"));
                     break;
                 default:
-                    if(this.isNumber(char)){
+                    if (this.isNumber(char)) {
                         tokens.push(this.scanNumber());
-                    }else if(this.isLetter(char)){
+                    } else if (this.isLetter(char)) {
                         tokens.push(this.scanVariable());
-                    }else{
+                    } else {
                         throw new Error("Invalid token");
                     }
                     break;
@@ -101,46 +104,52 @@ export class Lexer{
         return tokens;
     }
 
-    scanNumber(){
-        while(this.isNumber(this.peek())){
+    scanNumber() {
+        while (this.isNumber(this.peek())) {
             this.advance();
         }
-        if(this.peek() == "."){
+        if (this.peek() == ".") {
             this.advance();
-            if(!this.isNumber(this.peek())){
+            if (!this.isNumber(this.peek())) {
                 throw new Error("Invalid decimal");
             }
-            while(this.isNumber(this.peek())){
+            while (this.isNumber(this.peek())) {
                 this.advance();
             }
         }
-        return new Token(TokenType.NUMBER, this.equation.slice(this.startIndex, this.currentIndex));
+        return new Token(
+            TokenType.NUMBER,
+            this.equation.slice(this.startIndex, this.currentIndex),
+        );
     }
 
-    scanVariable(){
-        return new Token(TokenType.VARIABLE, this.equation.slice(this.startIndex, this.currentIndex));
+    scanVariable() {
+        return new Token(
+            TokenType.VARIABLE,
+            this.equation.slice(this.startIndex, this.currentIndex),
+        );
     }
 
-    isNumber(char){
+    isNumber(char) {
         return char >= "0" && char <= "9";
     }
 
-    isLetter(char){
+    isLetter(char) {
         return char >= "a" && char <= "z";
     }
 
-    isAtEnd(){
+    isAtEnd() {
         return this.currentIndex >= this.equation.length;
     }
 
-    peek(){
-        if(this.isAtEnd()){
+    peek() {
+        if (this.isAtEnd()) {
             return "\0";
         }
         return this.equation[this.currentIndex];
     }
 
-    advance(){
+    advance() {
         return this.equation[this.currentIndex++];
     }
 }

@@ -1,17 +1,17 @@
-import { Lexer } from './lexer.js'
-import { Parser } from "./parser.js"
+import { Lexer } from "./lexer.js";
+import { Parser } from "./parser.js";
 
-document.querySelector('#app').innerHTML = `
-<input id="equation" type="text" value="2x + y = 10">
-<button id="tokenize" type="button">Tokenize</button>
-`
+document.querySelector("#app").innerHTML = `
+    <input id="equation" type="text" value="2x + y = 10">
+    <button id="tokenize" type="button">Tokenize</button>
+`;
 
 const input = document.querySelector("#equation");
 const button = document.querySelector("#tokenize");
 
 button.addEventListener("click", () => {
     // Tokens
-	const lexer = new Lexer(input.value);
+    const lexer = new Lexer(input.value);
     const tokens = lexer.tokenize();
     console.table(tokens);
     // Parser
@@ -20,12 +20,12 @@ button.addEventListener("click", () => {
     console.log(JSON.stringify(AST, null, 4));
     // Variables
     const variables = parser.extractVariables();
-	console.log(variables);
+    console.log(variables);
     // Compute residual
-	const population1 = [2, 6];
-	const population2 = [2, 8];
-	console.log(parser.computeResidual(population1));
-	console.log(parser.computeResidual(population2));
+    const population1 = [2, 6];
+    const population2 = [2, 8];
+    console.log(parser.computeResidual(population1));
+    console.log(parser.computeResidual(population2));
 });
 
 // 2xyz + 3x^2y - 4xy^2 = 5(x + y)(z - 2)

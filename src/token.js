@@ -9,11 +9,11 @@ export const TokenType = Object.freeze({
     ASTERISK: "ASTERISK",
     SLASH: "SLASH",
     CARET: "CARET",
-    END: "END"
+    END: "END",
 });
 
-export class Token{
-    constructor(type, value){
+export class Token {
+    constructor(type, value) {
         this.type = type;
         this.value = value;
     }
