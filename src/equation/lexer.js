@@ -1,6 +1,5 @@
 import { TokenType, Token } from "./token.js";
 
-// Single-character symbols map directly to a token type.
 const SINGLE_CHAR_TOKENS = Object.freeze({
     "(": TokenType.OPEN_PARENTHESIS,
     ")": TokenType.CLOSE_PARENTHESIS,
@@ -12,8 +11,6 @@ const SINGLE_CHAR_TOKENS = Object.freeze({
     "^": TokenType.CARET,
 });
 
-// Adjacent token type pairs that imply a "*" between them,
-// e.g. "2x" -> NUMBER VARIABLE, "2(x)" -> NUMBER OPEN_PARENTHESIS.
 const IMPLICIT_MULTIPLY_PAIRS = new Set([
     `${TokenType.NUMBER}|${TokenType.VARIABLE}`,
     `${TokenType.NUMBER}|${TokenType.OPEN_PARENTHESIS}`,
@@ -23,11 +20,6 @@ const IMPLICIT_MULTIPLY_PAIRS = new Set([
     `${TokenType.CLOSE_PARENTHESIS}|${TokenType.OPEN_PARENTHESIS}`,
 ]);
 
-/**
- * Turns an equation string into a flat list of Tokens.
- * This is the only responsibility of Lexer: the parser never touches
- * the raw string, and nothing outside this class needs its internals.
- */
 export class Lexer {
     #equation;
     #startIndex = 0;

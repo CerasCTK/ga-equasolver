@@ -10,19 +10,6 @@ import {
 import { TokenType } from "./token.js";
 import { Lexer } from "./lexer.js";
 
-/**
- * Recursive-descent parser: turns a token list into an Equation AST.
- * Parsing is its only responsibility - evaluation lives on the AST nodes
- * themselves (see ast.js), and tokenizing lives in Lexer.
- *
- * Grammar (lowest to highest precedence):
- *   equation   -> expression "=" expression
- *   expression -> term (("+" | "-") term)*
- *   term       -> unary (("*" | "/") unary)*
- *   unary      -> ("+" | "-") unary | power
- *   power      -> factor ("^" unary)?      // right-associative
- *   factor     -> NUMBER | VARIABLE | "(" expression ")"
- */
 export class Parser {
     #tokens;
     #currentIndex = 0;
@@ -32,7 +19,6 @@ export class Parser {
         this.#tokens = tokens;
     }
 
-    /** Convenience factory: tokenize and parse an equation string in one call. */
     static parseEquation(equation) {
         const tokens = new Lexer(equation).tokenize();
         return new Parser(tokens).parse();
@@ -50,7 +36,6 @@ export class Parser {
         return new Equation(lhs, rhs);
     }
 
-    /** Variable names encountered while parsing, in first-seen order. */
     getVariables() {
         return [...this.#variables];
     }

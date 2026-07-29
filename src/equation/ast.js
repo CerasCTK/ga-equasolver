@@ -11,22 +11,11 @@ export const Unary = Object.freeze({
     NEGATIVE: "NEGATIVE",
 });
 
-/**
- * Base class for every expression node.
- * Each subclass knows how to evaluate itself (polymorphism), so adding a
- * new node type never requires touching existing evaluation code (OCP).
- */
 export class Expr {
     evaluate(_variables) {
         throw new Error("evaluate() must be implemented by subclass");
     }
 
-    /**
-     * Collects the names of every variable referenced within this expression
-     * into `names`. Default: no variables (e.g. NumberExpr) - subclasses that
-     * reference or contain other expressions override this.
-     * @param {Set<string>} _names
-     */
     collectVariableNames(_names) {}
 }
 
@@ -114,27 +103,16 @@ export class BinaryExpr extends Expr {
     }
 }
 
-/**
- * An equation is a relation "lhs = rhs" between two expressions.
- * It is not itself an expression (it has no numeric value), so it is
- * modeled as its own type instead of a BinaryExpr with an EQUAL operator.
- */
 export class Equation {
     constructor(lhs, rhs) {
         this.lhs = lhs;
         this.rhs = rhs;
     }
 
-    /**
-     * Residual = lhs(variables) - rhs(variables).
-     * A residual of 0 means the given variable values satisfy the equation.
-     * @param {Map<string, number>} variables
-     */
     computeResidual(variables) {
         return this.lhs.evaluate(variables) - this.rhs.evaluate(variables);
     }
 
-    /** Names of every variable referenced anywhere in the equation, in first-seen order. */
     getVariableNames() {
         const names = new Set();
         this.lhs.collectVariableNames(names);
