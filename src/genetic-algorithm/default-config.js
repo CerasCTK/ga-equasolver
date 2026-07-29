@@ -4,9 +4,6 @@ import { ArithmeticCrossover } from "./crossover/arithmetic-crossover.js";
 import { GaussianMutation } from "./mutation/gaussian-mutation.js";
 
 export const DEFAULT_CONFIG = Object.freeze({
-    // Source of randomness for GeneticAlgorithm's own coin-flips (crossover
-    // / mutation probability checks). Override with a seeded function for
-    // reproducible runs (e.g. in tests).
     random: Math.random,
 
     termination: Object.freeze({
@@ -20,8 +17,6 @@ export const DEFAULT_CONFIG = Object.freeze({
     }),
 
     fitness: Object.freeze({
-        // undefined -> GeneticAlgorithm falls back to a residual-based
-        // fitness function built from the parsed equation.
         fitnessFunction: undefined,
     }),
 
